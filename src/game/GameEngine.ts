@@ -82,7 +82,6 @@ export class GameEngine {
     if (this.gameState === GameState.PLAY) {
       this.bird.flap();
       this.metrics.flaps++;
-      this.updateCalories();
     }
   }
 
@@ -114,6 +113,9 @@ export class GameEngine {
     if (this.gameState !== GameState.PLAY) {
       return;
     }
+
+    // Update calories continuously during gameplay
+    this.updateCalories();
 
     // Update bird position based on nose if provided
     if (noseY !== undefined) {
@@ -218,10 +220,18 @@ export class GameEngine {
   }
 
   private updateCalories() {
-    const durationMinutes = (Date.now() - this.gameStartTime) / 60000;
-    this.metrics.calories = Math.round(
-      MET_VALUE * CALORIE_WEIGHT_KG * durationMinutes
-    );
+    // Calculate calories based on score and flaps
+    // Formula: 40 points = 10 calories (0.25 cal per point)
+    // Plus bonus from flaps
+    
+    // Base calories from score (each pipe passed)
+    const scoreCalories = this.metrics.score * 0.25;
+    
+    // Bonus calories per flap (each squat/arm raise burns extra)
+    // ~0.2 calories per movement
+    const flapBonusCalories = this.metrics.flaps * 0.2;
+    
+    this.metrics.calories = Math.round(scoreCalories + flapBonusCalories);
   }
 
   updatePoseMetrics(confidence: number, latency: number) {

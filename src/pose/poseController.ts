@@ -1,5 +1,12 @@
-import { Pose, Results } from '@mediapipe/pose';
-import { Camera } from '@mediapipe/camera_utils';
+// MediaPipe is loaded from CDN in index.html
+// Access it via window object to avoid bundling issues
+declare global {
+  interface Window {
+    Pose: any;
+    Camera: any;
+  }
+}
+
 import { PoseLandmark, PoseResults, CalibrationData, FlapDetection } from '@/types/pose';
 import {
   SQUAT_THRESHOLD,
@@ -12,8 +19,8 @@ import {
 } from '@/constants/game';
 
 export class PoseController {
-  private pose: Pose | null = null;
-  private camera: Camera | null = null;
+  private pose: any = null;
+  private camera: any = null;
   private videoElement: HTMLVideoElement | null = null;
   private canvasElement: HTMLCanvasElement | null = null;
   private canvasCtx: CanvasRenderingContext2D | null = null;
@@ -59,8 +66,15 @@ export class PoseController {
       );
     }
 
-    this.pose = new Pose({
-      locateFile: (file) => {
+    // Check if MediaPipe Pose is loaded from CDN
+    if (typeof window.Pose === 'undefined') {
+      throw new Error(
+        'MediaPipe Pose library failed to load. Please check your internet connection and refresh the page.'
+      );
+    }
+
+    this.pose = new window.Pose({
+      locateFile: (file: string) => {
         return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
       },
     });
@@ -89,8 +103,15 @@ export class PoseController {
       // Stop the test stream
       stream.getTracks().forEach(track => track.stop());
 
+      // Check if MediaPipe Camera is loaded
+      if (typeof window.Camera === 'undefined') {
+        throw new Error(
+          'MediaPipe Camera library failed to load. Please check your internet connection and refresh the page.'
+        );
+      }
+
       // Now initialize with MediaPipe Camera
-      this.camera = new Camera(videoElement, {
+      this.camera = new window.Camera(videoElement, {
         onFrame: async () => {
           if (this.pose) {
             await this.pose.send({ image: videoElement });
@@ -133,7 +154,7 @@ export class PoseController {
     }
   }
 
-  private onPoseResults(results: Results) {
+  private onPoseResults(results: any) {
     if (!results.poseLandmarks || !this.canvasCtx || !this.canvasElement) return;
 
     const landmarks: PoseLandmark[] = results.poseLandmarks.map((lm: any) => ({
