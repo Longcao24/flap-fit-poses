@@ -44,6 +44,21 @@ export class PoseController {
     this.onFlapCallback = onFlap;
     this.onResultsCallback = onResults;
 
+    // Check if running on HTTPS or localhost
+    const isSecureContext = window.isSecureContext;
+    if (!isSecureContext) {
+      throw new Error(
+        'Camera access requires HTTPS. Please deploy your app with HTTPS enabled or use localhost for testing.'
+      );
+    }
+
+    // Check if getUserMedia is available
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error(
+        'Camera API is not supported in this browser. Please use a modern browser like Chrome, Firefox, or Edge.'
+      );
+    }
+
     this.pose = new Pose({
       locateFile: (file) => {
         return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
@@ -61,6 +76,19 @@ export class PoseController {
     this.pose.onResults(this.onPoseResults.bind(this));
 
     try {
+      // Test camera access first
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: 640, 
+          height: 480,
+          facingMode: 'user'
+        } 
+      });
+      
+      // Stop the test stream
+      stream.getTracks().forEach(track => track.stop());
+
+      // Now initialize with MediaPipe Camera
       this.camera = new Camera(videoElement, {
         onFrame: async () => {
           if (this.pose) {
@@ -72,9 +100,35 @@ export class PoseController {
       });
       await this.camera.start();
       this.isInitialized = true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to initialize camera:', error);
-      throw error;
+      
+      // Provide specific error messages
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        throw new Error(
+          'Camera permission denied. Please allow camera access in your browser settings and refresh the page.'
+        );
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        throw new Error(
+          'No camera found. Please connect a camera and refresh the page.'
+        );
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        throw new Error(
+          'Camera is already in use by another application. Please close other apps using the camera and try again.'
+        );
+      } else if (error.name === 'OverconstrainedError') {
+        throw new Error(
+          'Camera does not support the required settings. Please try a different camera.'
+        );
+      } else if (error.name === 'SecurityError') {
+        throw new Error(
+          'Camera access blocked due to security policy. Ensure your site is served over HTTPS.'
+        );
+      }
+      
+      throw new Error(
+        error.message || 'Failed to access camera. Please check your camera permissions and try again.'
+      );
     }
   }
 

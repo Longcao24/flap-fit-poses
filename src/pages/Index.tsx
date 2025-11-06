@@ -82,10 +82,23 @@ const Index = () => {
         }
       );
       
-      toast.success('Camera connected!');
-    } catch (error) {
+      toast.success('✅ Camera connected successfully!', {
+        description: 'You can now control the game with your body movements.',
+      });
+    } catch (error: any) {
       console.error('Failed to initialize pose detection:', error);
-      toast.error('Failed to access camera. Using keyboard controls.');
+      
+      const errorMessage = error.message || 'Failed to access camera';
+      
+      toast.error('❌ Camera Access Failed', {
+        description: errorMessage,
+        duration: 8000,
+      });
+      
+      toast.info('⌨️ Keyboard Mode Active', {
+        description: 'Use SPACE or ↑ to flap. Press P to pause.',
+        duration: 5000,
+      });
     }
   };
 
