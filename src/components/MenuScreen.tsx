@@ -24,10 +24,10 @@ export const MenuScreen = ({ onStart }: MenuScreenProps) => {
             <div className="space-y-2">
               <h3 className="font-semibold text-foreground">How to Play</h3>
               <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• <span className="text-accent font-medium">Squat down</span> to make the bird flap</li>
-                <li>• <span className="text-secondary font-medium">Raise your arms</span> above shoulders to flap</li>
-                <li>• Keyboard: Press <span className="font-mono bg-muted px-2 py-0.5 rounded">Space</span> or <span className="font-mono bg-muted px-2 py-0.5 rounded">↑</span></li>
-                <li>• Avoid the pipes and stay in the air!</li>
+                <li>• <span className="text-accent font-medium">Move your head</span> up and down to control the bird</li>
+                <li>• The bird follows your <span className="text-secondary font-medium">nose position</span></li>
+                <li>• Stay centered in the camera frame</li>
+                <li>• Avoid the pipes and navigate through gaps!</li>
               </ul>
             </div>
           </div>

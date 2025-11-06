@@ -92,7 +92,17 @@ const Index = () => {
   const startGameLoop = () => {
     const loop = () => {
       if (gameEngineRef.current) {
-        gameEngineRef.current.update();
+        // Get nose position from pose controller
+        let noseY: number | undefined;
+        if (poseControllerRef.current) {
+          const noseYNormalized = poseControllerRef.current.getNoseY();
+          if (noseYNormalized !== null) {
+            // Convert normalized Y (0-1) to canvas coordinates (0-600)
+            noseY = noseYNormalized * 600;
+          }
+        }
+        
+        gameEngineRef.current.update(noseY);
         gameEngineRef.current.draw();
         setMetrics(gameEngineRef.current.getMetrics());
       }

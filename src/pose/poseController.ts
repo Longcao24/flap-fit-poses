@@ -26,6 +26,7 @@ export class PoseController {
   private armRaiseStartTime = 0;
   private lastHipY = 0;
   private smoothedHipY = 0;
+  private smoothedNoseY = 0.5;
   
   private isInitialized = false;
   private onFlapCallback: ((detection: FlapDetection) => void) | null = null;
@@ -298,6 +299,18 @@ export class PoseController {
 
   getLastResults(): PoseResults | null {
     return this.lastResults;
+  }
+
+  getNoseY(): number | null {
+    if (!this.lastResults || !this.lastResults.poseLandmarks) return null;
+    
+    const nose = this.lastResults.poseLandmarks[0]; // Nose landmark
+    if (!nose || !nose.visibility || nose.visibility < 0.5) return null;
+    
+    // Smooth the nose Y position
+    this.smoothedNoseY = SMOOTHING_FACTOR * nose.y + (1 - SMOOTHING_FACTOR) * this.smoothedNoseY;
+    
+    return this.smoothedNoseY;
   }
 
   isReady(): boolean {

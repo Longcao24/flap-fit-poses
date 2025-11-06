@@ -98,7 +98,7 @@ export class GameEngine {
     }
   }
 
-  update() {
+  update(noseY?: number) {
     const now = performance.now();
     const deltaTime = now - this.lastFrameTime;
     this.lastFrameTime = now;
@@ -115,8 +115,12 @@ export class GameEngine {
       return;
     }
 
-    // Update bird
-    this.bird.update();
+    // Update bird position based on nose if provided
+    if (noseY !== undefined) {
+      this.bird.setTargetY(noseY, 0.3);
+    } else {
+      this.bird.update();
+    }
 
     // Update pipes
     this.pipes.forEach((pipe) => pipe.update());

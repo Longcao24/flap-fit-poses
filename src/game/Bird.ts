@@ -20,28 +20,27 @@ export class Bird {
   }
 
   update() {
-    this.velocity += GRAVITY;
+    // Physics update is now handled by setTargetY
+    // This method kept for compatibility
     
-    // Terminal velocity
-    if (this.velocity > TERMINAL_VELOCITY) {
-      this.velocity = TERMINAL_VELOCITY;
-    }
-    
-    this.y += this.velocity;
-    
-    // Rotation based on velocity
+    // Rotation based on velocity (visual feedback)
     this.rotation = Math.min(Math.max(this.velocity * 3, -30), 90);
+  }
+
+  setTargetY(targetY: number, smoothing: number = 0.2) {
+    // Smoothly move bird to target Y position (nose position)
+    const clampedTarget = Math.max(0, Math.min(CANVAS_HEIGHT - this.size, targetY));
     
-    // Bounds check
-    if (this.y < 0) {
-      this.y = 0;
-      this.velocity = 0;
-    }
+    // Calculate velocity for visual rotation
+    const deltaY = clampedTarget - this.y;
+    this.velocity = deltaY * 0.3;
     
-    if (this.y > CANVAS_HEIGHT - this.size) {
-      this.y = CANVAS_HEIGHT - this.size;
-      this.velocity = 0;
-    }
+    // Smooth interpolation
+    this.y += deltaY * smoothing;
+    
+    // Clamp to canvas bounds
+    if (this.y < 0) this.y = 0;
+    if (this.y > CANVAS_HEIGHT - this.size) this.y = CANVAS_HEIGHT - this.size;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
